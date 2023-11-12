@@ -1,15 +1,31 @@
-use display_info::DisplayInfo;
 use screenshots::Screen;
-use std::{fs, time::Instant};
+use std::time::Instant;
+
+fn mello() -> Box<String> {
+    "Hello, world!"
+}
 
 fn main() {
-    let display_infos = DisplayInfo::all().unwrap();
-    let display_info = display_infos.first().unwrap();
-    println!("{:?}", display_info);
+    let start = Instant::now();
+    let screens = Screen::all().unwrap();
 
-    let screen = Screen::new(&display_info);
+    for screen in screens {
+        println!("capturer {screen:?}");
+        let mut image = screen.capture().unwrap();
+        image
+            .save(format!("target/{}.png", screen.display_info.id))
+            .unwrap();
 
-    let image = screen.capture_area(0, 0, 300, 300).unwrap();
-    let buffer = image.buffer();
-    fs::write(format!("./{}-2.png", screen.display_info.id), buffer).unwrap();
+        image = screen.capture_area(300, 300, 300, 300).unwrap();
+        image
+            .save(format!("target/{}-2.png", screen.display_info.id))
+            .unwrap();
+    }
+
+    let screen = Screen::from_point(100, 100).unwrap();
+    println!("capturer {screen:?}");
+
+    let image = screen.capture_area(300, 300, 300, 300).unwrap();
+    image.save("target/capture_display_with_point.png").unwrap();
+    println!("运行耗时: {:?}", start.elapsed());
 }
